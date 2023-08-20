@@ -1,34 +1,30 @@
 const { Schema, Types } = require('mongoose');
 
-const thoughtsSchema = new Schema(
+const reactionSchema = new Schema(
     {
-        thoughtText: {
+        reactionID: {
+            _id: mongoose.Schema.Types.ObjectId,
+            default: new ObjectId()
+        },
+        reactionBody: {
             type: String,
             required: true,
-            minlength: 1,
-            maxlength: 280,
+            maxlength: 280
+        },
+        username: {
+            type: String,
+            required: true,
         },
         createdAt: {
             type: Date,
-            default: Date.now
-        },
-        username: {
-            type: Schema.Types.username,
-            ref: 'user',
-            required: true
-        },
-        reactions: {
-            type: Schema.Types.ObjectId,
-            ref: 'reaction',
-            required: true
+            default: new Date
         }
 
     }
-)
+);
 
 
-
-thoughtsSchema.virtual('timestamp').get(function () {
+reactionSchema.virtual('timestamp').get(function () {
     const date = this.createdAt;
     const year = date.getFullYear();
     const month = (date.getMonth() + 1).toString().padStart(2, '0');
@@ -40,6 +36,3 @@ thoughtsSchema.virtual('timestamp').get(function () {
     return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
   }
 )
-thoughtsSchema.virtual('reactionCount').get(function () {
-  return this.reactions.length;
-});

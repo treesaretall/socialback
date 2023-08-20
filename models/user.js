@@ -1,5 +1,6 @@
 const { Schema, model } = require('mongoose');
 const thoughtsSchema = require('./thoughts')
+
 const userSchema = new Schema(
     {
         username: {
@@ -19,15 +20,31 @@ const userSchema = new Schema(
                 message: props => `${props.value} is not a valid email address!`
                 }, //REMEMBER TO LINK THIS IN MIDDLEWARE
         },
-        thoughts: [thoughtsSchema]
+        thoughts: [
+            {
+                type: Schema.Types.ObjectId,
+                ref: 'thought',
+            }
+        ],
+        friends: [
+            {
+                type: Schema.Types.ObjectId,
+                ref: 'user',
+            }
+        ]
     },
     {
         toJSON: {
             getters: true,
-            setters: true
+            setters: true,
+            virtuals: true
         }
     }
 )
+
+userSchema.virtual('friendCount').get(function () {
+  return this.friends.length;
+});
 
 const User = model('user', userSchema);
 module.exports = User;
