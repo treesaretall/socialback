@@ -1,4 +1,34 @@
-const { Schema, Types } = require('mongoose');
+const { Schema, Types, model } = require('mongoose');
+
+const reactionSchema = new Schema(
+    {
+        reactionID: {
+            type: Schema.Types.ObjectId,
+            default: () => new Types.ObjectId(),
+        },
+        reactionBody: {
+            type: String,
+            required: true,
+            maxlength: 280
+        },
+        username: {
+            type: String,
+            required: true,
+        },
+        createdAt: {
+            type: Date,
+            default: new Date
+        }
+    },
+    {
+        toJSON: {
+            virtuals: true,
+            getters: true
+        },
+        id: false
+    }
+);
+
 
 const thoughtsSchema = new Schema(
     {
@@ -13,20 +43,33 @@ const thoughtsSchema = new Schema(
             default: Date.now
         },
         username: {
-            type: Schema.Types.username,
-            ref: 'user',
+            type: String,
             required: true
         },
-        reactions: {
-            type: Schema.Types.ObjectId,
-            ref: 'reaction',
-            required: true
-        }
-
+        reactions: [reactionSchema]
+    },
+    {
+        toJSON: {
+            virtuals: true,
+            getters: true
+        },
+        id: false
     }
 )
 
 
+reactionSchema.virtual('timestamp').get(function () {
+    const date = this.createdAt;
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    const seconds = date.getSeconds().toString().padStart(2, '0');
+    
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+  }
+)
 
 thoughtsSchema.virtual('timestamp').get(function () {
     const date = this.createdAt;
@@ -43,3 +86,6 @@ thoughtsSchema.virtual('timestamp').get(function () {
 thoughtsSchema.virtual('reactionCount').get(function () {
   return this.reactions.length;
 });
+
+const Thought = model('thought', thoughtsSchema);
+module.exports = Thought;

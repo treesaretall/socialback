@@ -9,10 +9,14 @@ const {
     removeReaction
 } = require('../../controllers/thoughts');
 
-// /api/users
+// /api/thoughts
 router.route('/')
-    .get(getThoughts)
+    .get(getThoughts);
+    
+
+router.route('/:userId')
     .post(createThought);
+
 
 router.route('/:thoughtId')
     .get(getSingleThought)

@@ -38,7 +38,8 @@ const userSchema = new Schema(
             getters: true,
             setters: true,
             virtuals: true
-        }
+        },
+        id: false,
     }
 )
 
