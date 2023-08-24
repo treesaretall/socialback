@@ -30,7 +30,7 @@ module.exports = {
 
     async getSingleThought(req, res) {
         try {
-            const thought = await Thought.findOne(req.params.thoughtId)
+            const thought = await Thought.findOne({ _id: req.params.thoughtId })
                 .populate({
                     path: 'reactions',
                     select: '-__v'
@@ -46,7 +46,6 @@ module.exports = {
     },
 
     async createThought(req, res) {
-        console.log(req.body);
         try {
             const thought = await Thought.create(req.body);
             const user = await User.findOneAndUpdate({ username: req.body.username }, { $addToSet: { thoughts: thought._id } });
@@ -56,7 +55,7 @@ module.exports = {
         }
     },
 
-    async updateThought(res, req) {
+    async updateThought(req, res) {
         try {
             const thought = await Thought.findOneAndUpdate({ _id: req.params.thoughtId }, req.body, {new: true, runValidators: true});
             if (!thought) {

@@ -1,5 +1,5 @@
 const { ObjectId } = require('mongoose').Types;
-const { Reaction, Thoughts, User } = require('../models');
+const { Reaction, Thought, User } = require('../models');
 
 const headCount = async () => {
     const numberOfUsers = await User.aggregate()
@@ -68,14 +68,16 @@ module.exports = {
     },
 
     async deleteUser(req, res) {
+        console.log(req);
         try {
-            const thought = await Thoughts.deleteMany({ userId: req.params.userId });
             const user = await User.findOneAndDelete({ _id: req.params.userId });
-
             if (!user) {
                 return res.status(404).json({ message: 'No user found!' });
             }
-            res.json({ message: 'User deleted!' });
+            await Thought.deleteMany({ _id: { $in: user.thoughts } });
+            return res.status(200).json({
+            message: "User and their thoughts deleted!",
+          });
         } catch (err) {
             res.status(500).json(err);
         }
