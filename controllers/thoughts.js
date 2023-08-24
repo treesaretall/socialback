@@ -1,9 +1,9 @@
 const { ObjectId } = require('mongoose').Types;
-const { Reaction, Thoughts, User } = require('../models');
+const { Reaction, Thought, User } = require('../models');
 
 
 const headCount = async () => {
-    const numberOfThoughts = await Thoughts.aggregate()
+    const numberOfThoughts = await Thought.aggregate()
         .count('thoughtCount');
     return numberOfThoughts;
 }
@@ -12,7 +12,7 @@ module.exports = {
 
     async getThoughts(req, res) {
         try {
-            const thoughts = await Thoughts.find()
+            const thoughts = await Thought.find()
                 .populate({
                     path: 'reactions',
                     select: '-_v'
@@ -30,7 +30,7 @@ module.exports = {
 
     async getSingleThought(req, res) {
         try {
-            const thought = await Thoughts.findOne(req.params.thoughtId)
+            const thought = await Thought.findOne(req.params.thoughtId)
                 .populate({
                     path: 'reactions',
                     select: '-__v'
@@ -46,10 +46,11 @@ module.exports = {
     },
 
     async createThought(req, res) {
+        console.log(req.body);
         try {
-            const thought = await Thoughts.create(req.body);
-            const user = await User.findOneAndUpdate({_id: req.params.userId}, {$addToSet: {thoughts: thought._id}});
-            res.json(user, thought);
+            const thought = await Thought.create(req.body);
+            const user = await User.findOneAndUpdate({ username: req.body.username }, { $addToSet: { thoughts: thought._id } });
+            res.json(thought);
         } catch (err) {
             res.status(500).json(err);
         }
@@ -57,7 +58,7 @@ module.exports = {
 
     async updateThought(res, req) {
         try {
-            const thought = await Thoughts.findOneAndUpdate({ _id: req.params.thoughtId }, req.body, {new: true, runValidators: true});
+            const thought = await Thought.findOneAndUpdate({ _id: req.params.thoughtId }, req.body, {new: true, runValidators: true});
             if (!thought) {
                 console.error('Thought not found');
                 return null;
@@ -70,13 +71,13 @@ module.exports = {
 
     async deleteThought(req, res) {
         try {
-            const thought = await Thoughts.findOneAndDelete({ _id: req.params.thoughtId });
+            const thought = await Thought.findOneAndDelete({ _id: req.params.thoughtId });
 
             if (!thought) {
                 return res.status(404).json({ message: 'No thought found!' });
             }
             const user = await User.findOneAndUpdate(
-                { _id: req.params.userId },
+                { username: thought.username },
                 { $pull: { thoughts: req.params.thoughtId } },
                 { new: true }
             )
@@ -92,7 +93,7 @@ module.exports = {
 
     async addReaction(req, res) {
         try {
-            const thought = await Thoughts.findOneAndUpdate(
+            const thought = await Thought.findOneAndUpdate(
                 { _id: req.params.thoughtId },
                 { $addToSet: { reactions: req.body } },
                 { runValidators: true, new: true }
@@ -109,9 +110,9 @@ module.exports = {
 
     async removeReaction(req, res) {
         try {
-            const thought = await Thoughts.findOneAndUpdate(
+            const thought = await Thought.findOneAndUpdate(
                 { _id: req.params.thoughtId },
-                { $pull: { reactions: { reactionId: req.params.reactionId } } },
+                { $pull: { reactions: { _id: req.params.reactionId } } },
                 { runValidators: true, new: true }
             );
             if (!thought) {
